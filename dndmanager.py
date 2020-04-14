@@ -64,21 +64,41 @@ def hoverDetection(x,y,w,h):
 
     prevPressed1 = pressed1
 
-def gridLines():
-    for i in range(0,screenWidth,int(round(screenWidth/10,0))):
+def gridLines(num):
+    for i in range(0,screenWidth,int(screenWidth/num)):
         pygame.draw.rect(window,black,(i,0,1,screenHeight))
 
-    for i in range(0,screenHeight,int(round(screenHeight/10,0))):
+    for i in range(0,screenHeight,int(screenHeight/num)):
         pygame.draw.rect(window,black,(0,i,screenWidth,1))
 
+def guiButton(text,x,y,w,h):
+    mouse = pygame.mouse.get_pos()
+
+    if x <= mouse[0] <= x+w and y <= mouse[1] <= y+h: #if hovering over with mouse
+        pygame.draw.rect(window,green,(x,y,w,h))
+        text = font.render(text,True,black)
+        textRect = text.get_rect()
+        window.blit(text,(int((x+w/2)-(textRect.width/2)),int(40-textRect.height/2)))
+        return True
+    else:
+        pygame.draw.rect(window,red,(x,y,w,h))
+        text = font.render(text,True,black)
+        textRect = text.get_rect()
+        window.blit(text,(int((x+w/2)-(textRect.width/2)),int(40-textRect.height/2)))
+        return False
+
 def GameLoop():
-    
     #variable assignment (probably a more efficient way to import all but I couldnt find any)
     global gameLoop
     global gameOver
     gridSnap = True
-    print(round(773,-2))
+    gridNum = 25
+    
+    Sprite1.width=screenWidth/gridNum
+    Sprite1.height=screenHeight/gridNum
+    
     start_ticks = pygame.time.get_ticks()
+    prevPressed1 = False
     
     while gameLoop:
         mouse = pygame.mouse.get_pos()
@@ -89,11 +109,23 @@ def GameLoop():
                 pygame.quit()
         
         window.fill(white)
-        gridLines()
+        if guiButton("Snap",screenWidth-110,10,100,60) == True:#text,x,y,w,h
+            if pressed1 == False and prevPressed1 == True:
+                if gridSnap == True:
+                    gridSnap = False
+                else:
+                    gridSnap = True
         
-        if pressed1 == True and prevPressed1 == False and gridSnap == False:
-            Sprite1.x = mouse[0]-(Sprite1.width/2)
-            Sprite1.y = mouse[1]-(Sprite1.height/2)
+        gridLines(gridNum)
+
+        if gridSnap == True:
+            if pressed1 == False and prevPressed1 == True:
+                Sprite1.x = (screenWidth/gridNum) * round((mouse[0]-(Sprite1.width/2))/(screenWidth/gridNum))
+                Sprite1.y = (screenHeight/gridNum) * round((mouse[1]-(Sprite1.height/2))/(screenHeight/gridNum))
+        else:
+            if pressed1 == False and prevPressed1 == True:
+                Sprite1.x = mouse[0]-(Sprite1.width/2)
+                Sprite1.y = mouse[1]-(Sprite1.height/2)
         
         Sprite1.render()
 
