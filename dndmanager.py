@@ -11,8 +11,8 @@ pygame.init()
 
 displayInfo = pygame.display.Info()
 
-screenWidth = int(round(displayInfo.current_h/1.1,-2))
-screenHeight = int(round(displayInfo.current_h/1.1,-2))
+screenWidth = int(round(displayInfo.current_h/1.2,-2))
+screenHeight = int(round(displayInfo.current_h/1.2,-2))
 window = pygame.display.set_mode((screenWidth,screenHeight)) 
   
 pygame.display.set_caption("D&D Battle Manager")
