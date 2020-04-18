@@ -11,8 +11,8 @@ pygame.init()
 
 displayInfo = pygame.display.Info()
 
-screenWidth = int(round(displayInfo.current_h/1.2,-2))
-screenHeight = int(round(displayInfo.current_h/1.2,-2))
+screenWidth = int(round(displayInfo.current_h/1.107,-2))
+screenHeight = int(round(displayInfo.current_h/1.107,-2))
 window = pygame.display.set_mode((screenWidth,screenHeight)) 
   
 pygame.display.set_caption("D&D Battle Manager")
@@ -23,6 +23,7 @@ white = (255,255,255)
 red = (255,25,25)
 green = (25,255,25)
 blue = (25,25,255)
+aqua = (0,255,255)
 
 mainMenuBack = (0,162,168)
 
@@ -98,18 +99,18 @@ def zoom(direction): #direction: 1 will zoom in -1 will zoom out
         elif gridNum == 50:
             print("Cannot zoom out any more")
 
-def guiButton(message,x,y,w,h): #message can be an img or string
+def guiButton(message,x,y,w,h,isOn=False): #message can be an img or string
     mouse = pygame.mouse.get_pos()
 
     if type(message) == str:
         if x <= mouse[0] <= x+w and y <= mouse[1] <= y+h: #if hovering over with mouse
-            pygame.draw.rect(window,green,(x,y,w,h))
+            pygame.draw.rect(window,aqua,(x,y,w,h))
             message = font.render(message,True,black)
             messageRect = message.get_rect()
             window.blit(message,(int((x+w/2)-(messageRect.width/2)),int((y+h/2)-messageRect.height/2)))
             return True
         else:
-            pygame.draw.rect(window,red,(x,y,w,h))
+            pygame.draw.rect(window,green if isOn else red,(x,y,w,h))  # if item is enabled make green and if off show as red
             message = font.render(message,True,black)
             messageRect = message.get_rect()
             window.blit(message,(int((x+w/2)-(messageRect.width/2)),int((y+h/2)-messageRect.height/2)))
@@ -186,7 +187,7 @@ def GameLoop():
 
 
         if settingsGuiVisible == True: #only shows when settings are open
-            if guiButton("Snap",5,screenHeight-120,100,60) == True:#text,x,y,w,h
+            if guiButton("Snap",5,screenHeight-120,100,60,gridSnap) == True:#text,x,y,w,h
                 snapBtnHover = True
                 if pressed1 == False and prevPressed1 == True:
                     if gridSnap == True:
