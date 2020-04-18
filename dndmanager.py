@@ -132,6 +132,7 @@ def GameLoop():
     settingsIcon = pygame.image.load('settings.png')
     plusIcon = pygame.image.load('plusSign.png')
     minusIcon = pygame.image.load('minusSign.png')
+    imgElf1 = pygame.image.load('img/icons8-elf-50.png')
     
     gridSnap = True
 
@@ -171,10 +172,14 @@ def GameLoop():
                     Char1.x = mouse[0]-(Char1.width/2)
                     Char1.y = mouse[1]-(Char1.height/2)
         
-        Char1.render()
+        selectedImg = imgElf1
+#        selectImgResized = cv2.resize(selectedImg, (Char1.width,Char1.length))
+        selectedImg = pygame.transform.scale(selectedImg, (int(Char1.width),int(Char1.height)))
+        window.blit(selectedImg,(Char1.x,Char1.y))
+        #Char1.render()
 
         #GUI v
-        if guiButton(settingsIcon,5,screenHeight-65,60,60) == True: #opens/closes settings menu
+        if guiButton(settingsIcon,5,screenHeight-65,60,60) == True: #opens/closes settings
             settingsBtnHover = True
             if pressed1 == False and prevPressed1 == True:
                 if settingsGuiVisible == True:
