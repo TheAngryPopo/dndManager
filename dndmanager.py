@@ -24,6 +24,7 @@ red = (255,25,25)
 green = (25,255,25)
 blue = (25,25,255)
 aqua = (0,255,255)
+grey = (100,100,100)
 
 mainMenuBack = (0,162,168)
 
@@ -130,6 +131,7 @@ def GameLoop():
     settingsIcon = pygame.image.load('settings.png')
     plusIcon = pygame.image.load('plusSign.png')
     minusIcon = pygame.image.load('minusSign.png')
+    charAddIcon = pygame.image.load('charMenu.png')
     imgElf1 = pygame.image.load('img/icons8-elf-50.png')
 
     objList = [Char1]
@@ -142,8 +144,10 @@ def GameLoop():
     settingsBtnHover = False
     zoomInBtnHover = False
     zoomOutBtnHover = False
+    charBtnHover = False
 
     settingsGuiVisible = False
+    charGuiVisible = False
     
     start_ticks = pygame.time.get_ticks()
     prevPressed1 = False
@@ -188,8 +192,11 @@ def GameLoop():
         
         Char1.render(imgElf1)
 
+
+
+        
         #GUI v
-        if guiButton(settingsIcon,5,screenHeight-65,60,60) == True: #opens/closes settings
+        if guiButton(settingsIcon,5,screenHeight-65,60,60): #opens/closes settings
             settingsBtnHover = True
             if pressed1 == False and prevPressed1 == True:
                 if settingsGuiVisible == True:
@@ -199,7 +206,6 @@ def GameLoop():
                     print("opened settings")
         else:
             settingsBtnHover = False
-
 
         if settingsGuiVisible == True: #only shows when settings are open
             if guiButton("Snap",5,screenHeight-120,100,60,gridSnap) == True:#text,x,y,w,h
@@ -212,6 +218,21 @@ def GameLoop():
             else:
                 snapBtnHover = False
 
+
+        if charGuiVisible:
+            pygame.draw.rect(window,grey,(()))
+        
+        if guiButton(charAddIcon,screenWidth-65,5,60,60): #opens/closes character menu
+            charBtnHover = True
+            if pressed1 == False and prevPressed1 == True:
+                if charGuiVisible == True:
+                    charGuiVisible = False
+                else:
+                    charGuiVisible = True
+                    print("opened character menu")
+        else:
+            charBtnHover = False
+        
 
         if guiButton(plusIcon,screenWidth-30,screenHeight-60,25,25) == True: #zoom in button
             zoomInBtnHover = True
@@ -228,6 +249,8 @@ def GameLoop():
             zoomOutBtnHover = False
         #GUI ^
 
+
+        
         prevPressed1 = pressed1
         
         pygame.display.flip()
