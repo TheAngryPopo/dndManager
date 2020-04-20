@@ -1,0 +1,3 @@
+Autosave database file belongs in this folder.
+Future location for user triggered game state files as well.
+
