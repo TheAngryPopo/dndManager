@@ -16,7 +16,7 @@ displayInfo = pygame.display.Info()
 screenWidth = int(round(displayInfo.current_h/1.107,-2))
 screenHeight = int(round(displayInfo.current_h/1.107,-2))
 window = pygame.display.set_mode((screenWidth,screenHeight)) 
-  
+
 pygame.display.set_caption("D&D Battle Manager")
 
 #colours
@@ -53,10 +53,14 @@ class Sprite:
         self.height=height
     
     def render(self,img):
-        img = pygame.transform.scale(img, (int(self.width),int(self.height)))
+        img = pygame.transform.scale(img,(int(self.width),int(self.height)))
         window.blit(img,(self.x,self.y))
 
 Char1 = Sprite(0,0,100,100)
+imgElf1 = pygame.image.load('img/icons8-elf-50.png')
+
+objList = [Char1]
+imgList = [imgElf1]
 
 def hoverDetection(x,y,w,h):
     global prevPressed1
@@ -124,17 +128,28 @@ def guiButton(message,x,y,w,h,isOn=False): #message can be an img or string
         else:
             return False
 
+def addChar(img): #adds a new character (char)
+    global objList
+    global gridNum
+    
+    newChar = Sprite(0,0,screenWidth/gridNum,screenHeight/gridNum)
+    objList.append(newChar)
+    imgList.append(img)
+
 def GameLoop():
     #variable assignment (probably a more efficient way to import all but I couldnt find any)
     global gameLoop
     global gameOver
     global gridNum
+    global objList
+    global imgList
 
     settingsIcon = pygame.image.load('img/settings.png')
     plusIcon = pygame.image.load('img/plusSign.png')
     minusIcon = pygame.image.load('img/minusSign.png')
     charAddIcon = pygame.image.load('img/charMenu.png')
     imgElf1 = pygame.image.load('img/icons8-elf-50.png')
+    guiBackground = pygame.image.load('img/guiBackground.png')
     
     selectedObjNum = 0
     draggingObj = False
@@ -155,6 +170,7 @@ def GameLoop():
         stateFile = shelve.open('savegame/autosave')
         # load up variables from the shelve file into your game variables
         objList = stateFile ['objList']
+        imgList = stateFile ['imgList']
         gridNum = stateFile ['gridNum']        
         stateFile.close()
     else:
@@ -165,6 +181,7 @@ def GameLoop():
         stateFile = shelve.open('savegame/autosave')
         # save game variables into the shelve file
         stateFile ['objList'] = objList
+        stateFile ['imgList'] = imgList
         stateFile ['gridNum'] = gridNum
         stateFile.close()
         
@@ -175,8 +192,9 @@ def GameLoop():
         mouse = pygame.mouse.get_pos()
         pressed1, pressed2, pressed3 = pygame.mouse.get_pressed()
 
-        Char1.width=screenWidth/gridNum
-        Char1.height=screenHeight/gridNum
+        for i in objList:
+            objList[objList.index(i)].width=screenWidth/gridNum
+            objList[objList.index(i)].height=screenHeight/gridNum
         
         for event in pygame.event.get():
             if (event.type==pygame.QUIT):
@@ -212,11 +230,11 @@ def GameLoop():
                     draggingObj = False
                     
         #selectImgResized = cv2.resize(selectedImg, (Char1.width,Char1.length))
-        
-        objList[selectedObjNum].render(imgElf1)
+
+        for i in objList:
+            objList[objList.index(i)].render(imgList[objList.index(i)])
 
 
-        
         #GUI v
         if guiButton(settingsIcon,5,screenHeight-65,60,60): #opens/closes settings
             settingsBtnHover = True
@@ -242,7 +260,10 @@ def GameLoop():
 
 
         if charGuiVisible:
-            pygame.draw.rect(window,grey,(()))
+            guiBackground = pygame.transform.scale(guiBackground,(120,440))#plan on making img 50x50 with 5 gap
+            window.blit(guiBackground,(int(screenWidth-120),80))
+            if guiButton(imgElf1,screenWidth-115,85,50,50) and pressed1 == False and prevPressed1 == True: #add elf1 btn
+                addChar(imgElf1)
         
         if guiButton(charAddIcon,screenWidth-65,5,60,60): #opens/closes character menu
             charBtnHover = True
@@ -308,49 +329,19 @@ def titleScreen():
         window.blit(titleTxt,(int((screenWidth/2)-(titleRect.width/2)),25))
         
         #Play Buttonwindow
-        if hoverDetection((screenWidth/2)-100,(screenHeight/2)-200,200,100) == True: #if hovering over with mouse
-            pygame.draw.rect(window,green,(int(screenWidth/2-100),int(screenHeight/2-200),200,100))
-            playBtnTxt = fontL.render('Start',True,black)
-            playBtnRect = playBtnTxt.get_rect()
-            window.blit(playBtnTxt,(int((screenWidth/2)-(playBtnRect.width/2)),int(screenHeight/2-170)))
-            if prevPressed1 == True and pressed1 == False:
-                mainMenu = False
-        else:
-            pygame.draw.rect(window,white,(int((screenWidth/2)-100),int((screenHeight/2)-200),200,100))
-            playBtnTxt = fontL.render('Start',True,black)
-            playBtnRect = playBtnTxt.get_rect()
-            window.blit(playBtnTxt,(int((screenWidth/2)-(playBtnRect.width/2)),int(screenHeight/2-170)))
+        if guiButton("Start",(screenWidth/2)-100,(screenHeight/2)-200,200,100,True) and prevPressed1 == True and pressed1 == False: #zoom in button
+            mainMenu = False
         
         #Load Game Button
-        if hoverDetection((screenWidth/2)-100,(screenHeight/2)-50,200,100) == True: #if hovering over with mouse
-            pygame.draw.rect(window,green,(int(screenWidth/2-100),int(screenHeight/2-50),200,100))
-            playBtnTxt2 = fontL.render('Load Game',True,black)
-            playBtnRect2 = playBtnTxt2.get_rect()
-            window.blit(playBtnTxt2,(int((screenWidth/2)-(playBtnRect2.width/2)),int(screenHeight/2-20)))
-            if prevPressed1 == True and pressed1 == False:
-                loadGame = True
-                mainMenu = False
-        else:
-            pygame.draw.rect(window,white,(int((screenWidth/2)-100),int((screenHeight/2)-50),200,100))
-            playBtnTxt2 = fontL.render('Load Game',True,black)
-            playBtnRect2 = playBtnTxt2.get_rect()
-            window.blit(playBtnTxt2,(int((screenWidth/2)-(playBtnRect2.width/2)),int(screenHeight/2-20)))
-        
+        if guiButton("Load Game",(screenWidth/2)-100,(screenHeight/2)-50,200,100,True) and prevPressed1 == True and pressed1 == False: #zoom in button
+            loadGame = True
+            mainMenu = False
+
         #Quit Button
-        if hoverDetection((screenWidth/2)-100,(screenHeight/2)+100,200,100) == True: #if hovering over with mouse
-            pygame.draw.rect(window,green,(int(screenWidth/2-100),int(screenHeight/2+100),200,100))
-            playBtnTxt3 = fontL.render('Quit',True,black)
-            playBtnRect3 = playBtnTxt3.get_rect()
-            window.blit(playBtnTxt3,(int((screenWidth/2)-(playBtnRect3.width/2)),int(screenHeight/2+130)))
-            if prevPressed1 == True and pressed1 == False:
-                loadGame = False
-                mainMenu = False
-                return
-        else:
-            pygame.draw.rect(window,white,(int((screenWidth/2)-100),int((screenHeight/2)+100),200,100))
-            playBtnTxt3 = fontL.render('Quit',True,black)
-            playBtnRect3 = playBtnTxt3.get_rect()
-            window.blit(playBtnTxt3,(int((screenWidth/2)-(playBtnRect3.width/2)),int(screenHeight/2+130)))
+        if guiButton("Quit",(screenWidth/2)-100,(screenHeight/2)+100,200,100,True) and prevPressed1 == True and pressed1 == False: #zoom in button
+            loadGame = False
+            mainMenu = False
+            return
         
         prevPressed1 = pressed1
 
