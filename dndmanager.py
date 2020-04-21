@@ -30,6 +30,8 @@ grey = (100,100,100)
 
 mainMenuBack = (0,162,168)
 
+scroll_y = 0
+
 clock = pygame.time.Clock()
 
 font = pygame.font.Font('freesansbold.ttf', 20)
@@ -57,7 +59,7 @@ class Sprite:
         window.blit(img,(self.x,self.y))
 
 Char1 = Sprite(0,0,100,100)
-imgElf1 = pygame.image.load('img/icons8-elf-50.png')
+imgElf1 = pygame.image.load('img/elf1.png')
 
 objList = [Char1]
 imgList = [imgElf1]
@@ -104,29 +106,33 @@ def zoom(direction): #direction: 1 will zoom in -1 will zoom out
         elif gridNum == 50:
             print("Cannot zoom out any more")
 
-def guiButton(message,x,y,w,h,isOn=False,screen=window): #message can be an img or string
+def guiButton(message,x,y,w,h,isOn=False,isScroll=False): #message can be an img or string
+    global scroll_y
     mouse = pygame.mouse.get_pos()
 
     if type(message) == str:
         if x <= mouse[0] <= x+w and y <= mouse[1] <= y+h: #if hovering over with mouse
-            pygame.draw.rect(screen,aqua,(x,y,w,h))
+            pygame.draw.rect(window,aqua,(x,y,w,h))
             message = font.render(message,True,black)
             messageRect = message.get_rect()
-            screen.blit(message,(int((x+w/2)-(messageRect.width/2)),int((y+h/2)-messageRect.height/2)))
+            window.blit(message,(int((x+w/2)-(messageRect.width/2)),int((y+h/2)-messageRect.height/2)))
             return True
         else:
-            pygame.draw.rect(screen,green if isOn else red,(x,y,w,h))  # if item is enabled make green and if off show as red
+            pygame.draw.rect(window,green if isOn else red,(x,y,w,h))  # if item is enabled make green and if off show as red
             message = font.render(message,True,black)
             messageRect = message.get_rect()
-            screen.blit(message,(int((x+w/2)-(messageRect.width/2)),int((y+h/2)-messageRect.height/2)))
+            window.blit(message,(int((x+w/2)-(messageRect.width/2)),int((y+h/2)-messageRect.height/2)))
             return False
     else:
-        message = pygame.transform.scale(message,(w,h))
-        screen.blit(message,(x,y))
-        if x <= mouse[0] <= x+w and y <= mouse[1] <= y+h: #if hovering over with mouse
-            return True
+        if isScroll and (y < 80 or y > 500):
+            None #this doesnt display them if they go out of bounds
         else:
-            return False
+            message = pygame.transform.scale(message,(w,h))
+            window.blit(message,(x,y))
+            if x <= mouse[0] <= x+w and y <= mouse[1] <= y+h: #if hovering over with mouse
+                return True
+            else:
+                return False
 
 def addChar(img): #adds a new character (char)
     global objList
@@ -143,17 +149,31 @@ def GameLoop():
     global gridNum
     global objList
     global imgList
+    global scroll_y
 
-    charMenu = pygame.surface.Surface((120,660))
-    scroll_y = 0
-
+    #img v    
     settingsIcon = pygame.image.load('img/settings.png')
     plusIcon = pygame.image.load('img/plusSign.png')
     minusIcon = pygame.image.load('img/minusSign.png')
     charAddIcon = pygame.image.load('img/charMenu.png')
-    imgElf1 = pygame.image.load('img/icons8-elf-50.png')
-    imgDragon1 = pygame.image.load('img/dragon1.png')
     guiBackground = pygame.image.load('img/guiBackground.png')
+    
+    imgElf1 = pygame.image.load('img/elf1.png')
+    imgElf2 = pygame.image.load('img/elf2.png')
+    imgElf3 = pygame.image.load('img/elf3.png')
+    imgDwarf1 = pygame.image.load('img/dwarf1.png')
+    imgDwarf2 = pygame.image.load('img/dwarf2.png')
+    imgLeprechaun1 = pygame.image.load('img/leprechaun1.png')
+    imgLeprechaun2 = pygame.image.load('img/leprechaun2.png')
+    imgOrc1 = pygame.image.load('img/orc1.png')
+    imgRanger1 = pygame.image.load('img/ranger1.png')
+    imgRanger2 = pygame.image.load('img/ranger2.png')
+    imgWitch1 = pygame.image.load('img/witch1.png')
+    imgWizard1 = pygame.image.load('img/wizard1.png')
+    imgWizard2 = pygame.image.load('img/wizard2.png')
+    imgDragon1 = pygame.image.load('img/dragon1.png')
+    charImgList = [imgElf1,imgElf2,imgElf3,imgDwarf1,imgDwarf2,imgLeprechaun1,imgLeprechaun2,imgOrc1,imgRanger1,imgRanger2,imgWitch1,imgWizard1,imgWizard2,imgDragon1]
+    #img ^
     
     selectedObjNum = 0
     draggingObj = False
@@ -209,10 +229,11 @@ def GameLoop():
                 print('Autosaving...')
                 print('Game state autosaved at ', datetime.now())
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 4: scroll_y = min(scroll_y + 15, 0)
-                if event.button == 5: scroll_y = max(scroll_y - 15, -300)
+                if event.button == 4: scroll_y = min(scroll_y + 10, 0)
+                if event.button == 5: scroll_y = max(scroll_y - 10, -600)
         
         window.fill(white) #Clears the screen (put anything to display after this line)
+        #charMenu.fill(white)
         
         gridLines(gridNum)
 
@@ -267,14 +288,20 @@ def GameLoop():
 
 
         if charGuiVisible:
-            guiBackground = pygame.transform.scale(guiBackground,(120,440))#plan on making img 50x50 with 5 gap
-            charMenu.blit(guiBackground,(int(screenWidth-120),80))
-            window.blit(charMenu,(screenWidth-120,scroll_y+80))
-            if guiButton(imgElf1,screenWidth-115,85,50,50,False,charMenu) and pressed1 == False and prevPressed1 == True: #add elf1 btn
-                addChar(imgElf1)
-            if guiButton(imgDragon1,screenWidth-65,85,50,50,False,charMenu) and pressed1 == False and prevPressed1 == True: #add dragon1 btn
-                addChar(imgDragon1)
-            charMenu.fill(white)
+            guiBackground = pygame.transform.scale(guiBackground,(120,555))#plan on making each img 50x50 with 5 gap
+            window.blit(guiBackground,(screenWidth-120,80))
+
+            #add images to charImgList to add them to this
+            startX=screenWidth-115
+            startY=85
+            for i in charImgList:
+                if guiButton(i,startX,scroll_y+startY,50,50,False,True) and pressed1 == False and prevPressed1 == True:
+                    addChar(i)
+                if charImgList.index(i)%2 == 0:
+                    startX = screenWidth-65
+                else:
+                    startX = screenWidth-115
+                    startY += 55
         
         if guiButton(charAddIcon,screenWidth-65,5,60,60): #opens/closes character menu
             charBtnHover = True
