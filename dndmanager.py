@@ -104,25 +104,25 @@ def zoom(direction): #direction: 1 will zoom in -1 will zoom out
         elif gridNum == 50:
             print("Cannot zoom out any more")
 
-def guiButton(message,x,y,w,h,isOn=False): #message can be an img or string
+def guiButton(message,x,y,w,h,isOn=False,screen=window): #message can be an img or string
     mouse = pygame.mouse.get_pos()
 
     if type(message) == str:
         if x <= mouse[0] <= x+w and y <= mouse[1] <= y+h: #if hovering over with mouse
-            pygame.draw.rect(window,aqua,(x,y,w,h))
+            pygame.draw.rect(screen,aqua,(x,y,w,h))
             message = font.render(message,True,black)
             messageRect = message.get_rect()
-            window.blit(message,(int((x+w/2)-(messageRect.width/2)),int((y+h/2)-messageRect.height/2)))
+            screen.blit(message,(int((x+w/2)-(messageRect.width/2)),int((y+h/2)-messageRect.height/2)))
             return True
         else:
-            pygame.draw.rect(window,green if isOn else red,(x,y,w,h))  # if item is enabled make green and if off show as red
+            pygame.draw.rect(screen,green if isOn else red,(x,y,w,h))  # if item is enabled make green and if off show as red
             message = font.render(message,True,black)
             messageRect = message.get_rect()
-            window.blit(message,(int((x+w/2)-(messageRect.width/2)),int((y+h/2)-messageRect.height/2)))
+            screen.blit(message,(int((x+w/2)-(messageRect.width/2)),int((y+h/2)-messageRect.height/2)))
             return False
     else:
         message = pygame.transform.scale(message,(w,h))
-        window.blit(message,(x,y))
+        screen.blit(message,(x,y))
         if x <= mouse[0] <= x+w and y <= mouse[1] <= y+h: #if hovering over with mouse
             return True
         else:
@@ -144,11 +144,15 @@ def GameLoop():
     global objList
     global imgList
 
+    charMenu = pygame.surface.Surface((120,660))
+    scroll_y = 0
+
     settingsIcon = pygame.image.load('img/settings.png')
     plusIcon = pygame.image.load('img/plusSign.png')
     minusIcon = pygame.image.load('img/minusSign.png')
     charAddIcon = pygame.image.load('img/charMenu.png')
     imgElf1 = pygame.image.load('img/icons8-elf-50.png')
+    imgDragon1 = pygame.image.load('img/dragon1.png')
     guiBackground = pygame.image.load('img/guiBackground.png')
     
     selectedObjNum = 0
@@ -204,6 +208,9 @@ def GameLoop():
                 AutoSave()
                 print('Autosaving...')
                 print('Game state autosaved at ', datetime.now())
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 4: scroll_y = min(scroll_y + 15, 0)
+                if event.button == 5: scroll_y = max(scroll_y - 15, -300)
         
         window.fill(white) #Clears the screen (put anything to display after this line)
         
@@ -261,9 +268,13 @@ def GameLoop():
 
         if charGuiVisible:
             guiBackground = pygame.transform.scale(guiBackground,(120,440))#plan on making img 50x50 with 5 gap
-            window.blit(guiBackground,(int(screenWidth-120),80))
-            if guiButton(imgElf1,screenWidth-115,85,50,50) and pressed1 == False and prevPressed1 == True: #add elf1 btn
+            charMenu.blit(guiBackground,(int(screenWidth-120),80))
+            window.blit(charMenu,(screenWidth-120,scroll_y+80))
+            if guiButton(imgElf1,screenWidth-115,85,50,50,False,charMenu) and pressed1 == False and prevPressed1 == True: #add elf1 btn
                 addChar(imgElf1)
+            if guiButton(imgDragon1,screenWidth-65,85,50,50,False,charMenu) and pressed1 == False and prevPressed1 == True: #add dragon1 btn
+                addChar(imgDragon1)
+            charMenu.fill(white)
         
         if guiButton(charAddIcon,screenWidth-65,5,60,60): #opens/closes character menu
             charBtnHover = True
