@@ -61,8 +61,11 @@ class Sprite:
 Char1 = Sprite(0,0,100,100)
 imgElf1 = pygame.image.load('img/elf1.png')
 
+global objList
+global imgList
 objList = [Char1]
 imgList = [imgElf1]
+objImgPath = ['img/elf1.png']    # File path of the object's image file
 
 def hoverDetection(x,y,w,h):
     global prevPressed1
@@ -134,13 +137,15 @@ def guiButton(message,x,y,w,h,isOn=False,isScroll=False): #message can be an img
             else:
                 return False
 
-def addChar(img): #adds a new character (char)
+def addChar(img,path): #adds a new character (char)
     global objList
     global gridNum
     
     newChar = Sprite(0,0,screenWidth/gridNum,screenHeight/gridNum)
     objList.append(newChar)
     imgList.append(img)
+    objImgPath.append(path)
+ 
 
 def GameLoop():
     #variable assignment (probably a more efficient way to import all but I couldnt find any)
@@ -148,7 +153,9 @@ def GameLoop():
     global gameOver
     global gridNum
     global objList
+    global objImgPath
     global imgList
+    global charImgPathList
     global scroll_y
 
     #img v    
@@ -158,22 +165,27 @@ def GameLoop():
     charAddIcon = pygame.image.load('img/charMenu.png')
     guiBackground = pygame.image.load('img/guiBackground.png')
     
-    imgElf1 = pygame.image.load('img/elf1.png')
-    imgElf2 = pygame.image.load('img/elf2.png')
-    imgElf3 = pygame.image.load('img/elf3.png')
-    imgDwarf1 = pygame.image.load('img/dwarf1.png')
-    imgDwarf2 = pygame.image.load('img/dwarf2.png')
-    imgLeprechaun1 = pygame.image.load('img/leprechaun1.png')
-    imgLeprechaun2 = pygame.image.load('img/leprechaun2.png')
-    imgOrc1 = pygame.image.load('img/orc1.png')
-    imgRanger1 = pygame.image.load('img/ranger1.png')
-    imgRanger2 = pygame.image.load('img/ranger2.png')
-    imgWitch1 = pygame.image.load('img/witch1.png')
-    imgWizard1 = pygame.image.load('img/wizard1.png')
-    imgWizard2 = pygame.image.load('img/wizard2.png')
-    imgDragon1 = pygame.image.load('img/dragon1.png')
-    charImgList = [imgElf1,imgElf2,imgElf3,imgDwarf1,imgDwarf2,imgLeprechaun1,imgLeprechaun2,imgOrc1,imgRanger1,imgRanger2,imgWitch1,imgWizard1,imgWizard2,imgDragon1]
+    #imgElf1 = pygame.image.load('img/elf1.png')
+    #imgElf2 = pygame.image.load('img/elf2.png')
+    #imgElf3 = pygame.image.load('img/elf3.png')
+    #imgDwarf1 = pygame.image.load('img/dwarf1.png')
+    #imgDwarf2 = pygame.image.load('img/dwarf2.png')
+    #imgLeprechaun1 = pygame.image.load('img/leprechaun1.png')
+    #imgLeprechaun2 = pygame.image.load('img/leprechaun2.png')
+    #imgOrc1 = pygame.image.load('img/orc1.png')
+    #imgRanger1 = pygame.image.load('img/ranger1.png')
+    #imgRanger2 = pygame.image.load('img/ranger2.png')
+    #imgWitch1 = pygame.image.load('img/witch1.png')
+    #imgWizard1 = pygame.image.load('img/wizard1.png')
+    #imgWizard2 = pygame.image.load('img/wizard2.png')
+    #imgDragon1 = pygame.image.load('img/dragon1.png')
+    charImgPathList = ['img/elf1.png','img/elf2.png','img/elf3.png','img/dwarf1.png','img/dwarf2.png','img/leprechaun1.png','img/leprechaun2.png','img/orc1.png','img/ranger1.png','img/ranger2.png','img/witch1.png','img/wizard1.png','img/wizard2.png','img/dragon1.png']
+    charImgList = []
+    for path in charImgPathList:
+        charImgList.append(pygame.image.load(path)) # List of character images
+ 
     #img ^
+    
     
     selectedObjNum = 0
     draggingObj = False
@@ -193,9 +205,14 @@ def GameLoop():
     if loadGame:
         stateFile = shelve.open('savegame/autosave')
         # load up variables from the shelve file into your game variables
+        gridNum = stateFile ['gridNum']
         objList = stateFile ['objList']
-        imgList = stateFile ['imgList']
-        gridNum = stateFile ['gridNum']        
+        objImgPath = stateFile ['objImgPath']
+        imgList = []
+        print(objImgPath[0])
+        for path in objImgPath:
+            print(path)
+            imgList.append(pygame.image.load(path))
         stateFile.close()
     else:
         objList = [Char1]
@@ -204,13 +221,13 @@ def GameLoop():
     def AutoSave():
         stateFile = shelve.open('savegame/autosave')
         # save game variables into the shelve file
-        stateFile ['objList'] = objList
-        stateFile ['imgList'] = imgList
         stateFile ['gridNum'] = gridNum
+        stateFile ['objList'] = objList
+        stateFile ['objImgPath'] = objImgPath
         stateFile.close()
         
     AUTOSAVEEVENT = pygame.USEREVENT+1  #Create a new timer id for AutoSave event
-    pygame.time.set_timer(AUTOSAVEEVENT, 20000)  # trigger autosave every x ms
+    pygame.time.set_timer(AUTOSAVEEVENT, 30000)  # trigger autosave every x ms
     
     while gameLoop: #main loop
         mouse = pygame.mouse.get_pos()
@@ -294,10 +311,11 @@ def GameLoop():
             #add images to charImgList to add them to this
             startX=screenWidth-115
             startY=85
-            for i in charImgList:
-                if guiButton(i,startX,scroll_y+startY,50,50,False,True) and pressed1 == False and prevPressed1 == True:
-                    addChar(i)
-                if charImgList.index(i)%2 == 0:
+            for i in range(0,len(charImgList)):
+                if guiButton(charImgList[i],startX,scroll_y+startY,50,50,False,True) and pressed1 == False and prevPressed1 == True:
+                    #addChar(i)
+                    addChar(charImgList[i],charImgPathList[i])
+                if charImgList.index(charImgList[i])%2 == 0:
                     startX = screenWidth-65
                 else:
                     startX = screenWidth-115
