@@ -127,7 +127,7 @@ def guiButton(message,x,y,w,h,isOn=False,isScroll=False): #message can be an img
             window.blit(message,(int((x+w/2)-(messageRect.width/2)),int((y+h/2)-messageRect.height/2)))
             return False
     else:
-        if isScroll and (y < 80 or y > 500):
+        if isScroll and (y < 80 or y > 600):
             None #this doesnt display them if they go out of bounds
         else:
             message = pygame.transform.scale(message,(w,h))
@@ -136,6 +136,19 @@ def guiButton(message,x,y,w,h,isOn=False,isScroll=False): #message can be an img
                 return True
             else:
                 return False
+
+def guiText(string,x,y,f,centerX=False,centerY=False): #f is font (font,fontL,fontXL)
+    string = f.render(string,True,black)
+    rect = string.get_rect()
+    txtBackground = pygame.image.load('img/txtBackground.png')
+    txtBackground = pygame.transform.scale(txtBackground,(rect.width+10,rect.height+10))
+    
+    if centerX == True:
+        x = (screenWidth/2)-(rect.width/2)
+    if centerY == True:
+        y = (screenHeight/2)-(rect.height/2)
+    window.blit(txtBackground,(x-5,y-5))
+    window.blit(string,(x,y))
 
 def addChar(img,path): #adds a new character (char)
     global objList
@@ -164,6 +177,7 @@ def GameLoop():
     minusIcon = pygame.image.load('img/minusSign.png')
     charAddIcon = pygame.image.load('img/charMenu.png')
     guiBackground = pygame.image.load('img/guiBackground.png')
+    selectionOutline = pygame.image.load('img/selectionOutline.png')
     
     #imgElf1 = pygame.image.load('img/elf1.png')
     #imgElf2 = pygame.image.load('img/elf2.png')
@@ -179,16 +193,21 @@ def GameLoop():
     #imgWizard1 = pygame.image.load('img/wizard1.png')
     #imgWizard2 = pygame.image.load('img/wizard2.png')
     #imgDragon1 = pygame.image.load('img/dragon1.png')
-    charImgPathList = ['img/elf1.png','img/elf2.png','img/elf3.png','img/dwarf1.png','img/dwarf2.png','img/leprechaun1.png','img/leprechaun2.png','img/orc1.png','img/ranger1.png','img/ranger2.png','img/witch1.png','img/wizard1.png','img/wizard2.png','img/dragon1.png']
+    charImgPathList = ['img/elf1.png','img/elf2.png','img/elf3.png','img/dwarf1.png','img/dwarf2.png','img/leprechaun1.png',
+                       'img/leprechaun2.png','img/orc1.png','img/ranger1.png','img/ranger2.png','img/witch1.png','img/wizard1.png',
+                       'img/wizard2.png','img/dragon1.png','img/barbarian1.png','img/barbarian2.png','img/bard1.png']
     charImgList = []
     for path in charImgPathList:
         charImgList.append(pygame.image.load(path)) # List of character images
  
     #img ^
     
-    
     selectedObjNum = 0
     draggingObj = False
+    selectingObj = False
+
+    originPos = [0,0]
+    dist = 0
         
     gridSnap = True
 
@@ -202,6 +221,8 @@ def GameLoop():
         
     start_ticks = pygame.time.get_ticks()
     prevPressed1 = False
+    prevPressed3 = False
+    
     if loadGame:
         stateFile = shelve.open('savegame/autosave')
         # load up variables from the shelve file into your game variables
@@ -234,8 +255,10 @@ def GameLoop():
         pressed1, pressed2, pressed3 = pygame.mouse.get_pressed()
 
         for i in objList:
-            objList[objList.index(i)].width=screenWidth/gridNum
-            objList[objList.index(i)].height=screenHeight/gridNum
+            objList[objList.index(i)].width = screenWidth/gridNum
+            objList[objList.index(i)].height = screenHeight/gridNum
+            objList[objList.index(i)].x = (screenWidth/gridNum) * round(objList[objList.index(i)].x/(screenWidth/gridNum))
+            objList[objList.index(i)].y = (screenWidth/gridNum) * round(objList[objList.index(i)].y/(screenWidth/gridNum))
         
         for event in pygame.event.get():
             if (event.type==pygame.QUIT):
@@ -246,23 +269,48 @@ def GameLoop():
                 print('Autosaving...')
                 print('Game state autosaved at ', datetime.now())
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 4: scroll_y = min(scroll_y + 10, 0)
-                if event.button == 5: scroll_y = max(scroll_y - 10, -600)
+                if event.button == 4: scroll_y = min(scroll_y + 15, 0)
+                if event.button == 5: scroll_y = max(scroll_y - 15, -600)
         
         window.fill(white) #Clears the screen (put anything to display after this line)
-        #charMenu.fill(white)
         
         gridLines(gridNum)
 
+        if pressed3 == True and prevPressed3 == False:
+            selectingObj = False
+        
         if snapBtnHover == False and settingsBtnHover == False and zoomInBtnHover == False and zoomOutBtnHover == False:
-            for i in objList:
-                if pressed1 == True and prevPressed1 == False and hoverDetection(i.x,i.y,i.width,i.height):
+            for i in objList: #this loop might cause lag with lots of characters????
+                if pressed1 == True and prevPressed1 == False and hoverDetection(i.x,i.y,i.width,i.height) and selectingObj == False:
+                    originPos = [int(i.x/(screenHeight/gridNum)),int(i.y/(screenHeight/gridNum))]
+                    print(originPos)
                     selectedObjNum = objList.index(i)
                     draggingObj = True
-            
+                    print("here")
+                if pressed3 == True and prevPressed3 == False and hoverDetection(i.x,i.y,i.width,i.height) and draggingObj == False:
+                    originPos = [int(i.x/(screenWidth/gridNum)),int(i.y/(screenHeight/gridNum))]
+                    selectedObjNum = objList.index(i)
+                    selectingObj = True
+                    
+            if selectingObj:
+                selectionOutline = pygame.transform.scale(selectionOutline,(int(objList[selectedObjNum].width),int(objList[selectedObjNum].height)))
+                window.blit(selectionOutline,(int(objList[selectedObjNum].x),int(objList[selectedObjNum].y)))
+                if abs(originPos[0]-int(mouse[0]/(screenHeight/gridNum))) >= abs(originPos[1]-int(mouse[1]/(screenHeight/gridNum))):
+                    dist = abs(originPos[0]-int(mouse[0]/(screenHeight/gridNum)))*5
+                else:
+                    dist = abs(originPos[1]-int(mouse[1]/(screenHeight/gridNum)))*5
+
+                pygame.draw.line(window,black,(originPos[0]*(screenWidth/gridNum)+objList[selectedObjNum].width/2,originPos[1]*(screenHeight/gridNum)+objList[selectedObjNum].height/2),(mouse[0],mouse[1]))
+                guiText(str(dist)+' ft',0,screenHeight-60,font,True)
+                
             if pressed1 == True and prevPressed1 == True and draggingObj == True:
-                objList[selectedObjNum].x = mouse[0]-(Char1.width/2)
-                objList[selectedObjNum].y = mouse[1]-(Char1.height/2)
+                if abs(originPos[0]-int(mouse[0]/(screenHeight/gridNum))) >= abs(originPos[1]-int(mouse[1]/(screenHeight/gridNum))):
+                    dist = abs(originPos[0]-int(mouse[0]/(screenHeight/gridNum)))*5
+                else:
+                    dist = abs(originPos[1]-int(mouse[1]/(screenHeight/gridNum)))*5
+                guiText(str(dist)+' ft',0,screenHeight-60,font,True)
+                objList[selectedObjNum].x = mouse[0]-(objList[selectedObjNum].width/2)
+                objList[selectedObjNum].y = mouse[1]-(objList[selectedObjNum].height/2)
                 
             if pressed1 == False and prevPressed1 == True and draggingObj == True:
                 if gridSnap == True:
@@ -273,12 +321,9 @@ def GameLoop():
                     objList[selectedObjNum].x = mouse[0]-(objList[selectedObjNum].width/2)
                     objList[selectedObjNum].y = mouse[1]-(objList[selectedObjNum].height/2)
                     draggingObj = False
-                    
-        #selectImgResized = cv2.resize(selectedImg, (Char1.width,Char1.length))
 
         for i in objList:
             objList[objList.index(i)].render(imgList[objList.index(i)])
-
 
         #GUI v
         if guiButton(settingsIcon,5,screenHeight-65,60,60): #opens/closes settings
@@ -351,6 +396,7 @@ def GameLoop():
 
         
         prevPressed1 = pressed1
+        prevPressed3 = pressed3
         
         pygame.display.flip()
         clock.tick(50)
