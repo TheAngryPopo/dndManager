@@ -248,7 +248,7 @@ def GameLoop():
     settingsGuiVisible = False
     charGuiVisible = False
 
-    start_ticks = pygame.time.get_ticks()
+    # start_ticks = pygame.time.get_ticks()  # local var start_ticks taken out because not used yet
     prevPressed1 = False
     prevPressed3 = False
 
@@ -446,7 +446,7 @@ def titleScreen():
             if (event.type == pygame.QUIT):
                 pygame.quit()
 
-        mouse = pygame.mouse.get_pos()
+        # mouse = pygame.mouse.get_pos()  # local var mouse was assigned but not used
         pressed1, pressed2, pressed3 = pygame.mouse.get_pressed()
         window.fill(mainMenuBack)
 
