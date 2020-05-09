@@ -455,11 +455,11 @@ def titleScreen():
         window.blit(titleTxt, (int((screenWidth/2)-(titleRect.width/2)), 25))
 
         # Play Buttonwindow
-        if guiButton("Start", (screenWidth/2)-100, (screenHeight/2)-200, 200, 100, True) and prevPressed1 and not pressed1:  # zoom in button
+        if guiButton("Start New Game", (screenWidth/2)-100, (screenHeight/2)-200, 200, 100, True) and prevPressed1 and not pressed1:  # zoom in button
             mainMenu = False
 
         # Load Game Button
-        if guiButton("Load Game", (screenWidth/2)-100, (screenHeight/2)-50, 200, 100, True) and prevPressed1 and not pressed1:  # zoom in button
+        if guiButton("Load Saved Game", (screenWidth/2)-100, (screenHeight/2)-50, 200, 100, True) and prevPressed1 and not pressed1:  # zoom in button
             loadGame = True
             mainMenu = False
 
