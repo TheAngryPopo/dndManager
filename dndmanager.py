@@ -171,8 +171,8 @@ def addChar(img, path):  # adds a new character (char)
     global spriteList
     global gridNum
 
-    newChar = Sprite(0, 0, screenWidth/gridNum, screenHeight/gridNum)
-    spriteList.append(newChar)
+    newSprite = Sprite(0, 0, screenWidth/gridNum, screenHeight/gridNum)
+    spriteList.append(newSprite)
     imgList.append(img)
     imgPathList.append(path)
 
